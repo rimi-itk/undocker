@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -o errexit -o errtrace -o noclobber -o nounset -o pipefail
+IFS=$'\n\t'
+
+set -o allexport
+source .env.undocker.local
+set +o allexport
+
+symfony local:server:start "$@"
