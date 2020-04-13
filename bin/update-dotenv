@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -o errexit -o errtrace -o noclobber -o nounset -o pipefail
+IFS=$'\n\t'
+
+dir=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
+bold=$(tput bold)
+normal=$(tput sgr0)
+
+$dir/application app:dot-env:update "$@"
