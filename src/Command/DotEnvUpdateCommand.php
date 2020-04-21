@@ -11,6 +11,8 @@
 namespace App\Command;
 
 use Psr\Log\LoggerInterface;
+use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\DiffOnlyOutputBuilder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Helper\Table;
@@ -106,13 +108,12 @@ class DotEnvUpdateCommand extends Command
         if ($content === $updatedContent) {
             $io->success(sprintf('File %s is already up to date.', basename($dotEnvFilename)));
         } else {
+            $builder = new DiffOnlyOutputBuilder("--- Original\n+++ New\n");
+            $diff = (new Differ($builder))->diff($content, $updatedContent);
             $helper = $this->getHelper('question');
-            $output->writeln([
-                str_repeat('-', 80),
-                $content,
-                str_repeat('-', 80),
-            ]);
-            $question = sprintf("Write\n\n%s\n\nto file %s? ", $updatedContent, $dotEnvFilename);
+            $io->section('Changes');
+            $output->writeln($diff);
+            $question = sprintf('Write changes to file %s? ', $dotEnvFilename);
             if ($io->confirm($question)) {
                 $this->logger->debug('Updating {file}', ['file' => $dotEnvFilename]);
                 file_put_contents($dotEnvFilename, $updatedContent);
